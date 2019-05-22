@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <form class="jumbotron">
+                    <h2>Sample Chat!</h2>
+                    <div class="form-group">
+                        <input type="text" id="name" class="form-control" placeholder="User"/>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="message" class="form-control" placeholder="Message"  ></textarea> 
+                    </div>
+                    <div class="form-group">
+                        <button id='send' class="btn btn-info">Send ></button>
+                    </div>
+                </form>
+                <div class="card" >                        
+                        <div class="card-body" id="messages">
+                          
+                        </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io();
+
+        (() => getMessages())();
+
+        document.querySelector('#send').addEventListener('click', (e) =>{
+            e.preventDefault();
+            let name = document.querySelector('#name').value;
+            let msg = document.querySelector('#message').value;
+
+            httpPostAsync('/messages', jsonContent = {
+                name: name,
+                message: msg
+            });
+        });
+
+        socket.on('message', addMessage);
+
+        function getMessages(){
+            httpGetAsync('/messages', (data) => addMessages(data));
+        }
+
+        function addMessages(messages){            
+            messages.forEach(msg => {
+                addMessage(msg);
+            });            
+        }
+
+        function addMessage(msg){
+            document.querySelector('#messages').innerHTML = `
+            <h5 class="card-title">${msg.name}</h5>
+            <p class="card-text">${msg.message}</p>
+            <hr/>
+            ${document.querySelector('#messages').innerHTML}`;
+        }
+
+        function httpGetAsync(theUrl, callback)
+        {
+            return fetch(theUrl).then((resp) =>{
+                return  resp.json();
+            }).then(callback);
+        }
+
+        function httpPostAsync(theUrl, jsonContent = {}){
+            return fetch(theUrl, {
+                method: 'POST', // *GET, POST, PUT, DELETE, etc.
+                mode: 'cors', // no-cors, cors, *same-origin
+                cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+                credentials: 'same-origin', // include, *same-origin, omit
+                headers: {
+                    'Content-Type': 'application/json',
+                    // 'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                redirect: 'follow', // manual, *follow, error
+                referrer: 'no-referrer', // no-referrer, *client
+                body: JSON.stringify(jsonContent), // body data type must match "Content-Type" header
+            }).then(response => response);
+        }
+    </script>
+</body>
+
+</html>
